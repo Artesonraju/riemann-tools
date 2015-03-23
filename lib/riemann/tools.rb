@@ -52,23 +52,26 @@ module Riemann
       end]
     end
 
-    def report(event)
-      if options[:tag]
-        # Work around a bug with beefcake which can't take frozen strings.
-        event[:tags] = options[:tag].map(&:dup)
-      end
+  def report(event)
+    event[:ttl] ||= (options[:ttl] || (options[:interval] * 2))
+    report_no_ttl(event)
+  end
 
-      event[:ttl] ||= (options[:ttl] || (options[:interval] * 2))
-
-      if options[:event_host]
-        event[:host] = options[:event_host].dup
-      end
-      
-      event = event.merge(attributes)
-
-      riemann << event
+  def report_no_ttl(event)
+    if options[:tag]
+      # Work around a bug with beefcake which can't take frozen strings.
+      event[:tags] = options[:tag].map(&:dup)
     end
 
+    if options[:event_host]
+      event[:host] = options[:event_host].dup
+    end
+    
+    event = event.merge(attributes)
+
+    riemann << event
+  end
+  
     def new_riemann_client
       r = Riemann::Client.new(
         :host    => options[:host],
