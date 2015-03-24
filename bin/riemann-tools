@@ -7,27 +7,21 @@ require File.expand_path('../../lib/riemann/tools/haproxy.rb', __FILE__)
 
 class Launcher
   include Riemann::Tools
-  def read_configs
-    configs = {}
-    ARGV.each do|config_file|
-      file = File.read(config_file)
-      configs[File.basename config_file] = file
-    end
-    configs
-  end
   
-  def init_plugins configs
+  require 'json'
+
+  def init_plugins config
     plugins = []
     global_config = ''
-    if configs.has_key? "global"
-      global_config = configs["global"]
+    if config.has_key? "global"
+      global_argv = config["global"]
     end
-    @base = Riemann::Tools::Base.new(global_config)
-    configs.each do |name, config|
+    @base = Riemann::Tools::Base.new(global_argv)
+    config.each do |name, argv|
       unless name == "global"
         begin
           clazz = "Riemann::Tools::#{name.capitalize}".split('::').inject(Object) {|o,c| o.const_get c}
-          plugin = clazz.new(global_config + config)
+          plugin = clazz.new(global_argv +' '+ argv)
           plugins << plugin
         rescue => e
           $stderr.puts "No plugin named #{name} : #{e.class} #{e}\n#{e.backtrace.join "\n"}"
@@ -38,8 +32,9 @@ class Launcher
   end
   
   def start
-    configs = read_configs
-    plugins = init_plugins configs
+    json_file = File.read(ARGV[0])
+    config = JSON.parse(json_file)
+    plugins = init_plugins config
     @base.run plugins
   end
 end
