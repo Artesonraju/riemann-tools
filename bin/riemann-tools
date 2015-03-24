@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require File.expand_path('../../lib/riemann/tools/base.rb', __FILE__)
+require File.expand_path('../../lib/riemann/tools/docker.rb', __FILE__)
+require File.expand_path('../../lib/riemann/tools/health.rb', __FILE__)
+require File.expand_path('../../lib/riemann/tools/haproxy.rb', __FILE__)
+
+class Launcher
+  include Riemann::Tools
+  def read_configs
+    configs = {}
+    ARGV.each do|config_file|
+      file = File.read(config_file)
+      configs[File.basename config_file] = file
+    end
+    configs
+  end
+  
+  def init_plugins configs
+    plugins = []
+    global_config = ''
+    if configs.has_key? "global"
+      global_config = configs["global"]
+    end
+    @base = Riemann::Tools::Base.new(global_config)
+    configs.each do |name, config|
+      unless name == "global"
+        begin
+          clazz = "Riemann::Tools::#{name.capitalize}".split('::').inject(Object) {|o,c| o.const_get c}
+          plugin = clazz.new(global_config + config)
+          plugins << plugin
+        rescue => e
+          $stderr.puts "No plugin named #{name} : #{e.class} #{e}\n#{e.backtrace.join "\n"}"
+        end
+      end
+    end
+    plugins
+  end
+  
+  def start
+    configs = read_configs
+    plugins = init_plugins configs
+    @base.run plugins
+  end
+end
+
+Launcher.new.start

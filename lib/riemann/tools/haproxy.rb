@@ -1,17 +1,14 @@
-#!/usr/bin/env ruby
-
 # Gathers haproxy CSV statistics and submits them to Riemann.
 
-require File.expand_path('../../lib/riemann/tools', __FILE__)
+require File.expand_path('../base.rb', __FILE__)
 
-class Riemann::Tools::Haproxy
-  include Riemann::Tools
+class Riemann::Tools::Haproxy < Riemann::Tools::Base
   require 'net/http'
   require 'csv'
 
-  opt :stats_url, "Full url to haproxy stats (eg: https://user:password@host.com:9999/stats)", :required => true, :type => :string
-
-  def initialize
+  def initialize(argv)
+    super argv  
+    opt :stats_url, "Full url to haproxy stats (eg: https://user:password@host.com:9999/stats)", :required => true, :type => :string
     @uri = URI(opts[:stats_url]+';csv')
   end
 
@@ -46,7 +43,4 @@ class Riemann::Tools::Haproxy
       h.request get
     end
   end
-
 end
-
-Riemann::Tools::Haproxy.run

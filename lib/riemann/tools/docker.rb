@@ -1,12 +1,9 @@
-#!/usr/bin/env ruby
-
 # Reports current docker container events as well as and network, CPU and
 # memory used by each container to riemann.
 
-require File.expand_path('../../lib/riemann/tools', __FILE__)
+require File.expand_path('../base.rb', __FILE__)
 
-class Riemann::Tools::Docker
-  include Riemann::Tools
+class Riemann::Tools::Docker < Riemann::Tools::Base
   
   require 'excon'
   require 'time'
@@ -15,24 +12,26 @@ class Riemann::Tools::Docker
   START_EVENTS = ['start', 'unpause']
   STOP_EVENTS = ['oom', 'destroy', 'die', 'kill', 'pause']
   
-  opt :docker_address, "Docker socket", :default => "unix:///var/run/docker.sock"
-  opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'event', 'network', 'memory'] 
-  opt :read_timeout, 'Docker requests read timeout', :type => :int, :default => 2
-  opt :open_timeout, 'Docker requests open timeout', :type => :int, :default => 1
-  opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
-  opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
-  opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
-  opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
-  opt :network_warning, "Docker events considered as warning level", :type => :strings,
-      :default => ["rx_dropped", "rx_errors", "tx_dropped", "tx_errors"]
-  opt :network_critical, "Docker events considered as warning level", :type => :strings,
-      :default => []
-  opt :critical_events, "Docker events considered as critical level", :type => :strings,
-      :default => ['oom'] 
-  opt :warning_events, "Docker events considered as warning level", :type => :strings,
-      :default => ['die', 'destroy', 'kill', 'pause', 'stop']
+  def initialize(argv)
+    super argv
+    opt :docker_address, "Docker socket", :default => "unix:///var/run/docker.sock"
+    opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'event', 'network', 'memory'] 
+    opt :read_timeout, 'Docker requests read timeout', :type => :int, :default => 2
+    opt :open_timeout, 'Docker requests open timeout', :type => :int, :default => 1
+    opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
+    opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
+    opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
+    opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
+    opt :network_warning, "Docker events considered as warning level", :type => :strings,
+        :default => ["rx_dropped", "rx_errors", "tx_dropped", "tx_errors"]
+    opt :network_critical, "Docker events considered as warning level", :type => :strings,
+        :default => []
+    opt :critical_events, "Docker events considered as critical level", :type => :strings,
+        :default => ['oom'] 
+    opt :warning_events, "Docker events considered as warning level", :type => :strings,
+        :default => ['die', 'destroy', 'kill', 'pause', 'stop']
 
-  def initialize
+    
     @limits = {
       :memory => {:critical => opts[:memory_critical], :warning => opts[:memory_warning]},
       :cpu => {:critical => opts[:cpu_critical], :warning => opts[:cpu_warning]},
@@ -375,5 +374,3 @@ class Riemann::Tools::Docker
     end
   end
 end
-
-Riemann::Tools::Docker.run
