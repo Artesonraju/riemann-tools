@@ -1,3 +1,5 @@
+require 'rake'
+
 gemspec = Gem::Specification.new do |s|
 
   s.name = 'riemann-tools'
@@ -20,7 +22,7 @@ gemspec = Gem::Specification.new do |s|
   s.add_dependency 'excon', '>= 0.44.4'
   s.add_dependency 'nokogiri', '>= 1.5.6'
 
-  s.files = FileList['lib/**/*', 'bin/*', 'LICENSE', 'README.markdown'].to_a
+  s.files = Rake::FileList['lib/**/*', 'bin/*', 'LICENSE', 'README.markdown'].to_a
   s.executables |= Dir.entries('bin/')
   s.require_path = 'lib'
   s.has_rdoc = true
