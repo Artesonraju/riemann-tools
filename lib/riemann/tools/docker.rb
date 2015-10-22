@@ -22,9 +22,9 @@ class Riemann::Tools::Docker < Riemann::Tools::Base
     opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
     opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
     opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
-    opt :network_warning, "Docker events considered as warning level", :type => :strings,
+    opt :network_warning, "Network events considered as warning level", :type => :strings,
         :default => ["rx_dropped", "rx_errors", "tx_dropped", "tx_errors"]
-    opt :network_critical, "Docker events considered as warning level", :type => :strings,
+    opt :network_critical, "Network events considered as warning level", :type => :strings,
         :default => []
     opt :critical_events, "Docker events considered as critical level", :type => :strings,
         :default => ['oom'] 
