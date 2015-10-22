@@ -1,23 +1,23 @@
-#!/usr/bin/env ruby
 
 # Reports current CPU, disk, load average, and memory use to riemann.
 
-require File.expand_path('../../lib/riemann/tools', __FILE__)
+require File.expand_path('../base.rb', __FILE__)
 
-class Riemann::Tools::Health
-  include Riemann::Tools
+class Riemann::Tools::Health < Riemann::Tools::Base
 
-  opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
-  opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
-  opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
-  opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
-  opt :load_warning, "Load warning threshold (load average / core)", :default => 3
-  opt :load_critical, "Load critical threshold (load average / core)", :default => 8
-  opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
-  opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
-  opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'load', 'memory', 'disk']
-
-  def initialize
+  def initialize(argv)
+    super argv
+    
+    opt :cpu_warning, "CPU warning threshold (fraction of total jiffies)", :default => 0.9
+    opt :cpu_critical, "CPU critical threshold (fraction of total jiffies)", :default => 0.95
+    opt :disk_warning, "Disk warning threshold (fraction of space used)", :default => 0.9
+    opt :disk_critical, "Disk critical threshold (fraction of space used)", :default => 0.95
+    opt :load_warning, "Load warning threshold (load average / core)", :default => 3
+    opt :load_critical, "Load critical threshold (load average / core)", :default => 8
+    opt :memory_warning, "Memory warning threshold (fraction of RAM)", :default => 0.85
+    opt :memory_critical, "Memory critical threshold (fraction of RAM)", :default => 0.95
+    opt :checks, "A list of checks to run.", :type => :strings, :default => ['cpu', 'load', 'memory', 'disk']
+  
     @limits = {
       :cpu => {:critical => opts[:cpu_critical], :warning => opts[:cpu_warning]},
       :disk => {:critical => opts[:disk_critical], :warning => opts[:disk_warning]},
@@ -276,5 +276,3 @@ class Riemann::Tools::Health
     end
   end
 end
-
-Riemann::Tools::Health.run
